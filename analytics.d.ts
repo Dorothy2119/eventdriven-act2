@@ -1,46 +1,58 @@
 /**
- * Configures the gathering of Angular CLI usage metrics. See
- * https://angular.io/cli/usage-analytics-gathering.
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
  */
-export interface Schema {
-    /**
-     * Shows a help message for this command in the console.
-     */
-    help?: HelpUnion;
-    /**
-     * Sets the default analytics enablement status for the project.
-     */
-    projectSetting?: ProjectSetting;
-    /**
-     * Directly enables or disables all usage analytics for the user, or prompts the user to set
-     * the status interactively, or sets the default status for the project.
-     */
-    settingOrProject: SettingOrProject;
-}
+import { AnalyticsCollector } from './analytics-collector';
+export declare const AnalyticsProperties: {
+    AngularCliProd: string;
+    AngularCliStaging: string;
+    readonly AngularCliDefault: string;
+};
 /**
- * Shows a help message for this command in the console.
+ * This is the ultimate safelist for checking if a package name is safe to report to analytics.
  */
-export declare type HelpUnion = boolean | HelpEnum;
-export declare enum HelpEnum {
-    HelpJson = "JSON",
-    Json = "json"
-}
+export declare const analyticsPackageSafelist: (string | RegExp)[];
+export declare function isPackageNameSafeForAnalytics(name: string): boolean;
 /**
- * Sets the default analytics enablement status for the project.
+ * Set analytics settings. This does not work if the user is not inside a project.
+ * @param level Which config to use. "global" for user-level, and "local" for project-level.
+ * @param value Either a user ID, true to generate a new User ID, or false to disable analytics.
  */
-export declare enum ProjectSetting {
-    Off = "off",
-    On = "on",
-    Prompt = "prompt"
-}
+export declare function setAnalyticsConfig(level: 'global' | 'local', value: string | boolean): void;
 /**
- * Directly enables or disables all usage analytics for the user, or prompts the user to set
- * the status interactively, or sets the default status for the project.
+ * Prompt the user for usage gathering permission.
+ * @param force Whether to ask regardless of whether or not the user is using an interactive shell.
+ * @return Whether or not the user was shown a prompt.
  */
-export declare enum SettingOrProject {
-    Ci = "ci",
-    Off = "off",
-    On = "on",
-    Project = "project",
-    Prompt = "prompt"
-}
+export declare function promptGlobalAnalytics(force?: boolean): Promise<boolean>;
+/**
+ * Prompt the user for usage gathering permission for the local project. Fails if there is no
+ * local workspace.
+ * @param force Whether to ask regardless of whether or not the user is using an interactive shell.
+ * @return Whether or not the user was shown a prompt.
+ */
+export declare function promptProjectAnalytics(force?: boolean): Promise<boolean>;
+export declare function hasGlobalAnalyticsConfiguration(): Promise<boolean>;
+/**
+ * Get the global analytics object for the user. This returns an instance of UniversalAnalytics,
+ * or undefined if analytics are disabled.
+ *
+ * If any problem happens, it is considered the user has been opting out of analytics.
+ */
+export declare function getGlobalAnalytics(): Promise<AnalyticsCollector | undefined>;
+export declare function hasWorkspaceAnalyticsConfiguration(): Promise<boolean>;
+/**
+ * Get the workspace analytics object for the user. This returns an instance of AnalyticsCollector,
+ * or undefined if analytics are disabled.
+ *
+ * If any problem happens, it is considered the user has been opting out of analytics.
+ */
+export declare function getWorkspaceAnalytics(): Promise<AnalyticsCollector | undefined>;
+/**
+ * Return the usage analytics sharing setting, which is either a property string (GA-XXXXXXX-XX),
+ * or undefined if no sharing.
+ */
+export declare function getSharedAnalytics(): Promise<AnalyticsCollector | undefined>;
